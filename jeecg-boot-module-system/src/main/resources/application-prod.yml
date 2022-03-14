@@ -96,8 +96,8 @@ spring:
     druid:
       stat-view-servlet:
         enabled: true
-        loginUsername: admin
-        loginPassword: 123456
+        loginUsername: root
+        loginPassword: root
         allow:
       web-stat-filter:
         enabled: true
