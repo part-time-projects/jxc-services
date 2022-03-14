@@ -155,7 +155,7 @@ mybatis-plus:
   #20200328 cfm modi
   mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml, classpath*:io/finer/erp/jeecg/**/xml/*Mapper.xml
   global-config:
-    # 关闭MP3.0自带的banner
+    # 关闭MP3.0自带的banners
     banner: false
     db-config:
       #主键类型  0:"数据库ID自增",1:"该类型为未设置主键类型", 2:"用户输入ID",3:"全局唯一ID (数字类型唯一ID)", 4:"全局唯一ID UUID",5:"字符串全局唯一ID (idWorker 的字符串表示)";

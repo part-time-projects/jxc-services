@@ -77,8 +77,8 @@ public class LoginController {
 		String realKey = MD5Util.MD5Encode(lowerCaseCaptcha+sysLoginModel.getCheckKey(), "utf-8");
 		Object checkCode = redisUtil.get(realKey);
 		if(checkCode==null || !checkCode.equals(lowerCaseCaptcha)) {
-			result.error500("验证码错误");
-			return result;
+				result.error500("验证码错误");
+				return result;
 		}
 		//update-end-author:taoyan date:20190828 for:校验验证码
 
