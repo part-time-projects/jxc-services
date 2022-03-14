@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-/**
+/**·
  * @Description: 应收单
  * @Author: jeecg-boot
  * @Date:   2020-04-30

@@ -10,7 +10,7 @@
 		<version>2.2.0</version>
 	</parent>
 	
-	<!--<repositories>
+	<repositories>
 		<repository>
 			<id>aliyun</id>
 			<name>aliyun Repository</name>
@@ -27,6 +27,6 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-	</repositories>-->
+	</repositories>
 	
 </project>
