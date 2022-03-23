@@ -175,6 +175,7 @@ public class BasSupplier implements Serializable {
     private java.lang.String remark;
 	/**是否启用*/
 	@Excel(name = "是否启用", width = 15)
+    @Dict(dicCode = "yn")
     @ApiModelProperty(value = "是否启用")
     private java.lang.Integer isEnabled;
 	/**创建人*/
