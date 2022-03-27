@@ -68,11 +68,6 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-	    if (Objects.nonNull(basCustomer)&& !ObjectUtils.isEmpty(basCustomer.getName())){
-            basCustomer.setCorporate(basCustomer.getName());
-			basCustomer.setAddress(basCustomer.getName());
-            basCustomer.setRemark(basCustomer.getName());
-        }
 		QueryWrapper<BasCustomer> queryWrapper = QueryGenerator.initQueryWrapper(basCustomer, req.getParameterMap());
 		Page<BasCustomer> page = new Page<BasCustomer>(pageNo, pageSize);
 		IPage<BasCustomer> pageList = basCustomerService.page(page, queryWrapper);
