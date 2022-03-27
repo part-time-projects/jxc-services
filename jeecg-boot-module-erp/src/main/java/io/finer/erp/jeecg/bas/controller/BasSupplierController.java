@@ -3,6 +3,7 @@ package io.finer.erp.jeecg.bas.controller;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +28,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -66,6 +68,11 @@ public class BasSupplierController extends JeecgController<BasSupplier, IBasSupp
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		if (Objects.nonNull(basSupplier)&& !ObjectUtils.isEmpty(basSupplier.getName())){
+			basSupplier.setCorporate(basSupplier.getName());
+			basSupplier.setAddress(basSupplier.getName());
+			basSupplier.setRemark(basSupplier.getName());
+		}
 		QueryWrapper<BasSupplier> queryWrapper = QueryGenerator.initQueryWrapper(basSupplier, req.getParameterMap());
 		Page<BasSupplier> page = new Page<BasSupplier>(pageNo, pageSize);
 		IPage<BasSupplier> pageList = basSupplierService.page(page, queryWrapper);
