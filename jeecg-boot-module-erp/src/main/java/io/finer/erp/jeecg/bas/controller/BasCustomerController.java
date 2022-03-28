@@ -70,9 +70,11 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 								   HttpServletRequest req) {
 		//QueryWrapper<BasCustomer> queryWrapper = QueryGenerator.initQueryWrapper(basCustomer, req.getParameterMap());
 		QueryWrapper<BasCustomer> queryWrapper = new QueryWrapper<>();
-		queryWrapper.and(i->i.like("name", basCustomer.getName()).or().like("corporate", basCustomer.getName()).or()
-						.like("address", basCustomer.getName()).or().like("remark", basCustomer.getName()))
-				.orderByDesc("create_time");
+		if (!ObjectUtils.isEmpty(basCustomer.getName())){
+			queryWrapper.and(i->i.like("name", basCustomer.getName()).or().like("corporate", basCustomer.getName()).or()
+					.like("address", basCustomer.getName()).or().like("remark", basCustomer.getName()));
+		}
+		queryWrapper.orderByDesc("create_time");
 		Page<BasCustomer> page = new Page<BasCustomer>(pageNo, pageSize);
 		IPage<BasCustomer> pageList = basCustomerService.page(page, queryWrapper);
 		return Result.ok(pageList);
