@@ -68,7 +68,11 @@ public class BasSupplierController extends JeecgController<BasSupplier, IBasSupp
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<BasSupplier> queryWrapper = QueryGenerator.initQueryWrapper(basSupplier, req.getParameterMap());
+		//QueryWrapper<BasSupplier> queryWrapper = QueryGenerator.initQueryWrapper(basSupplier, req.getParameterMap());
+		QueryWrapper<BasSupplier> queryWrapper = new QueryWrapper<>();
+		queryWrapper.and(i->i.like("name", basSupplier.getName()).or().like("corporate", basSupplier.getName()).or()
+						.like("address", basSupplier.getName()).or().like("remark", basSupplier.getName()))
+				.orderByDesc("create_time");
 		Page<BasSupplier> page = new Page<BasSupplier>(pageNo, pageSize);
 		IPage<BasSupplier> pageList = basSupplierService.page(page, queryWrapper);
 		return Result.ok(pageList);
