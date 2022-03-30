@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements ISysUserService {
-	
+
 	@Autowired
 	private SysUserMapper userMapper;
 	@Autowired
@@ -61,39 +61,39 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Autowired
 	private SysDepartRoleMapper sysDepartRoleMapper;
 
-    @Override
-    @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
-    public Result<?> resetPassword(String username, String oldpassword, String newpassword, String confirmpassword) {
-        SysUser user = userMapper.getUserByName(username);
-        String passwordEncode = PasswordUtil.encrypt(username, oldpassword, user.getSalt());
-        if (!user.getPassword().equals(passwordEncode)) {
-            return Result.error("旧密码输入错误!");
-        }
-        if (oConvertUtils.isEmpty(newpassword)) {
-            return Result.error("新密码不允许为空!");
-        }
-        if (!newpassword.equals(confirmpassword)) {
-            return Result.error("两次输入密码不一致!");
-        }
-        String password = PasswordUtil.encrypt(username, newpassword, user.getSalt());
-        this.userMapper.update(new SysUser().setPassword(password), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
-        return Result.ok("密码重置成功!");
-    }
+	@Override
+	@CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
+	public Result<?> resetPassword(String username, String oldpassword, String newpassword, String confirmpassword) {
+		SysUser user = userMapper.getUserByName(username);
+		String passwordEncode = PasswordUtil.encrypt(username, oldpassword, user.getSalt());
+		if (!user.getPassword().equals(passwordEncode)) {
+			return Result.error("旧密码输入错误!");
+		}
+		if (oConvertUtils.isEmpty(newpassword)) {
+			return Result.error("新密码不允许为空!");
+		}
+		if (!newpassword.equals(confirmpassword)) {
+			return Result.error("两次输入密码不一致!");
+		}
+		String password = PasswordUtil.encrypt(username, newpassword, user.getSalt());
+		this.userMapper.update(new SysUser().setPassword(password), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
+		return Result.ok("密码重置成功!");
+	}
 
-    @Override
-    @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
-    public Result<?> changePassword(SysUser sysUser) {
-        String salt = oConvertUtils.randomGen(8);
-        sysUser.setSalt(salt);
-        String password = sysUser.getPassword();
-        String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
-        sysUser.setPassword(passwordEncode);
-        this.userMapper.updateById(sysUser);
-        return Result.ok("密码修改成功!");
-    }
+	@Override
+	@CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
+	public Result<?> changePassword(SysUser sysUser) {
+		String salt = oConvertUtils.randomGen(8);
+		sysUser.setSalt(salt);
+		String password = sysUser.getPassword();
+		String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
+		sysUser.setPassword(passwordEncode);
+		this.userMapper.updateById(sysUser);
+		return Result.ok("密码修改成功!");
+	}
 
-    @Override
-    @CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
+	@Override
+	@CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
 	@Transactional(rollbackFor = Exception.class)
 	public boolean deleteUser(String userId) {
 		//1.删除用户
@@ -102,7 +102,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	}
 
 	@Override
-    @CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
+	@CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
 	@Transactional(rollbackFor = Exception.class)
 	public boolean deleteBatchUsers(String userIds) {
 		//1.删除用户
@@ -114,8 +114,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	public SysUser getUserByName(String username) {
 		return userMapper.getUserByName(username);
 	}
-	
-	
+
+
 	@Override
 	@Transactional
 	public void addUserWithRole(SysUser user, String roles) {
@@ -150,11 +150,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	public List<String> getRole(String username) {
 		return sysUserRoleMapper.getRoleByUserName(username);
 	}
-	
+
 	/**
 	 * 通过用户名获取用户角色集合
 	 * @param username 用户名
-     * @return 角色集合
+	 * @return 角色集合
 	 */
 	@Override
 	public Set<String> getUserRolesSet(String username) {
@@ -194,7 +194,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 //		SysUser user = userMapper.getUserByName(username);
 //		info.setSysUserCode(user.getUsername());
 //		info.setSysUserName(user.getRealname());
-		
+
 
 		LoginUser user = sysBaseAPI.getUserByName(username);
 		if(user!=null) {
@@ -202,7 +202,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			info.setSysUserName(user.getRealname());
 			info.setSysOrgCode(user.getOrgCode());
 		}
-		
+
 		//多部门支持in查询
 		List<SysDepart> list = sysDepartMapper.queryUserDeparts(user.getId());
 		List<String> sysMultiOrgCode = new ArrayList<String>();
@@ -218,7 +218,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			}
 		}
 		info.setSysMultiOrgCode(sysMultiOrgCode);
-		
+
 		return info;
 	}
 
@@ -254,9 +254,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		LambdaQueryWrapper<SysUser> lambdaQueryWrapper = queryWrapper.lambda();
 
 		lambdaQueryWrapper.eq(SysUser::getDelFlag, "0");
-        lambdaQueryWrapper.inSql(SysUser::getId, "SELECT user_id FROM sys_user_depart WHERE dep_id = '" + departId + "'");
+		lambdaQueryWrapper.inSql(SysUser::getId, "SELECT user_id FROM sys_user_depart WHERE dep_id = '" + departId + "'");
 
-        return userMapper.selectPage(page, lambdaQueryWrapper);
+		return userMapper.selectPage(page, lambdaQueryWrapper);
 	}
 
 	@Override
@@ -346,7 +346,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 
 	/**
-	   * 校验用户是否有效
+	 * 校验用户是否有效
 	 * @param sysUser
 	 * @return
 	 */
@@ -407,13 +407,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return line != 0;
 	}
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean updateNullPhoneEmail() {
-        userMapper.updateNullByEmptyString("email");
-        userMapper.updateNullByEmptyString("phone");
-        return true;
-    }
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public boolean updateNullPhoneEmail() {
+		userMapper.updateNullByEmptyString("email");
+		userMapper.updateNullByEmptyString("phone");
+		return true;
+	}
 
 	@Override
 	public void saveThirdUser(SysUser sysUser) {

@@ -94,4 +94,16 @@ public class BasMaterial implements Serializable {
 	@Excel(name = "版本", width = 15)
     @ApiModelProperty(value = "版本")
     private java.lang.Integer version;
+
+    /**
+     * 父id
+     */
+    @Dict(dictTable = "bas_material", dicText = "name", dicCode = "id")
+    @ApiModelProperty(value = "父物料")
+    private String parentId;
+
+    /**
+     * 是否叶子节点: 1:是 0:不是
+     */
+    private boolean isLeaf;
 }
