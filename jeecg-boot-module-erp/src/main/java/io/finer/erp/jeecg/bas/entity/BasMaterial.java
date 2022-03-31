@@ -107,4 +107,5 @@ public class BasMaterial implements Serializable {
      * 是否叶子节点: 1:是  0:不是
      */
     private boolean leaf = true;
+    
 }

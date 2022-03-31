@@ -6,12 +6,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.finer.erp.jeecg.bas.entity.BasMaterial;
 import io.finer.erp.jeecg.bas.entity.TreeModel;
+import io.finer.erp.jeecg.bas.model.BasMaterialTree;
 import io.finer.erp.jeecg.bas.service.IBasMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.AutoLog;
+import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
@@ -54,8 +56,18 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		QueryWrapper<BasMaterial> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
+		queryWrapper.eq("leaf",0);
+
 		Page<BasMaterial> page = new Page<BasMaterial>(pageNo, pageSize);
-		IPage<BasMaterial> pageList = basMaterialService.page(page, queryWrapper);
+		IPage pageList = basMaterialService.page(page, queryWrapper);
+
+		/**
+		* 列表展示修改为树型列表展示
+		 * 2022.4.1
+		 */
+		List<BasMaterialTree> treeData = new ArrayList<>();
+		getTreeList(treeData,pageList.getRecords());
+		pageList.setRecords(treeData);
 		return Result.ok(pageList);
 	}
 	
@@ -69,7 +81,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 	@ApiOperation(value="物料-添加", notes="物料-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody BasMaterial basMaterial) {
-		basMaterialService.save(basMaterial);
+		basMaterialService.addBasMaterial(basMaterial);
 		return Result.ok("添加成功！");
 	}
 	
@@ -83,7 +95,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 	@ApiOperation(value="物料-编辑", notes="物料-编辑")
 	@PutMapping(value = "/edit")
 	public Result<?> edit(@RequestBody BasMaterial basMaterial) {
-		basMaterialService.updateById(basMaterial);
+		basMaterialService.editBasMaterial(basMaterial);
 		return Result.ok("编辑成功!");
 	}
 	
@@ -97,7 +109,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 	@ApiOperation(value="物料-通过id删除", notes="物料-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
-		basMaterialService.removeById(id);
+		basMaterialService.deleteBasMaterial(id);
 		return Result.ok("删除成功!");
 	}
 	
@@ -204,4 +216,27 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 
 		 }
 	 }
-}
+
+
+
+	 private void getTreeList(List<BasMaterialTree> treeList, List<BasMaterial> metaList) {
+
+	 	 //TODO  递归数据库，生产环境禁止使用，待优化
+		 for (BasMaterial basMaterial : metaList) {
+			 String tempPid = basMaterial.getId();
+			 BasMaterialTree tree = new BasMaterialTree(basMaterial);
+
+			 treeList.add(tree);
+			 if (!basMaterial.isLeaf()){
+				 LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper<BasMaterial>();
+				 query.eq(BasMaterial::getParentId, tempPid);
+				 List<BasMaterial> childs = basMaterialService.list(query);
+				 if(childs != null && childs.size() > 0){
+					 getTreeList(treeList,childs);
+				 }
+
+			 }
+		 }
+	 }
+
+ }
