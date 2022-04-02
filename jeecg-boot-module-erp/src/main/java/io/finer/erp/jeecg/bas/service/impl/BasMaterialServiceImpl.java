@@ -30,6 +30,7 @@ import java.util.Map;
 @Service
 public class BasMaterialServiceImpl extends ServiceImpl<BasMaterialMapper, BasMaterial> implements IBasMaterialService {
 
+    static  final  int MATERIAL_LEVEL = 1;
     @Resource
     private BasMaterialMapper basMaterialMapper;
 
@@ -40,6 +41,7 @@ public class BasMaterialServiceImpl extends ServiceImpl<BasMaterialMapper, BasMa
         String pid = basMaterial.getParentId();
         if(oConvertUtils.isNotEmpty(pid)) {
             this.basMaterialMapper.setMenuLeaf(pid, 0);
+            basMaterial.setLevel(MATERIAL_LEVEL);
         }
         basMaterial.setLeaf(true);
         this.save(basMaterial);
@@ -67,6 +69,7 @@ public class BasMaterialServiceImpl extends ServiceImpl<BasMaterialMapper, BasMa
             //如果当前菜单的父菜单变了，则需要修改新父菜单和老父菜单的，叶子节点状态
             String pid = basMaterial.getParentId();
             if((oConvertUtils.isNotEmpty(pid) && !pid.equals(p.getParentId())) || oConvertUtils.isEmpty(pid)&&oConvertUtils.isNotEmpty(p.getParentId())) {
+                basMaterial.setLevel(MATERIAL_LEVEL);
                 //a.设置新的父菜单不为叶子节点
                 this.basMaterialMapper.setMenuLeaf(pid, 0);
                 //b.判断老的菜单下是否还有其他子菜单，没有的话则设置为叶子节点

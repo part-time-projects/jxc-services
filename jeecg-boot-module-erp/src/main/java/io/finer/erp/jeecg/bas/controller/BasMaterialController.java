@@ -11,6 +11,7 @@ import io.finer.erp.jeecg.bas.service.IBasMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.jdbc.Null;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.constant.CommonConstant;
@@ -55,8 +56,9 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+
 		QueryWrapper<BasMaterial> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
-		queryWrapper.eq("leaf",0);
+		queryWrapper.isNull("level");
 
 		Page<BasMaterial> page = new Page<BasMaterial>(pageNo, pageSize);
 		IPage pageList = basMaterialService.page(page, queryWrapper);
@@ -65,7 +67,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		* 列表展示修改为树型列表展示
 		 * 2022.4.1
 		 */
-		List<BasMaterialTree> treeData = new ArrayList<>();
+  		List<BasMaterialTree> treeData = new ArrayList<>();
 		getTreeList(treeData,pageList.getRecords());
 		pageList.setRecords(treeData);
 		return Result.ok(pageList);
