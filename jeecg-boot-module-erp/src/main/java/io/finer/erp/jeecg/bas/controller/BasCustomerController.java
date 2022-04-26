@@ -3,6 +3,7 @@ package io.finer.erp.jeecg.bas.controller;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +28,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -49,7 +51,7 @@ import org.jeecg.common.aspect.annotation.AutoLog;
 public class BasCustomerController extends JeecgController<BasCustomer, IBasCustomerService> {
 	@Autowired
 	private IBasCustomerService basCustomerService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -66,12 +68,18 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<BasCustomer> queryWrapper = QueryGenerator.initQueryWrapper(basCustomer, req.getParameterMap());
+		//QueryWrapper<BasCustomer> queryWrapper = QueryGenerator.initQueryWrapper(basCustomer, req.getParameterMap());
+		QueryWrapper<BasCustomer> queryWrapper = new QueryWrapper<>();
+		if (!ObjectUtils.isEmpty(basCustomer.getName())){
+			queryWrapper.and(i->i.like("name", basCustomer.getName()).or().like("corporate", basCustomer.getName()).or()
+					.like("address", basCustomer.getName()).or().like("remark", basCustomer.getName()));
+		}
+		queryWrapper.orderByDesc("create_time");
 		Page<BasCustomer> page = new Page<BasCustomer>(pageNo, pageSize);
 		IPage<BasCustomer> pageList = basCustomerService.page(page, queryWrapper);
 		return Result.ok(pageList);
 	}
-	
+
 	/**
 	 *   添加
 	 *
@@ -85,7 +93,7 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 		basCustomerService.save(basCustomer);
 		return Result.ok("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -99,7 +107,7 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 		basCustomerService.updateById(basCustomer);
 		return Result.ok("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
@@ -113,7 +121,7 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 		basCustomerService.removeById(id);
 		return Result.ok("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
@@ -127,7 +135,7 @@ public class BasCustomerController extends JeecgController<BasCustomer, IBasCust
 		this.basCustomerService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.ok("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *

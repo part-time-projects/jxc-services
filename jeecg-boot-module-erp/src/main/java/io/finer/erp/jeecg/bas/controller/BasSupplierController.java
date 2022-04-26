@@ -3,6 +3,7 @@ package io.finer.erp.jeecg.bas.controller;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +28,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -66,7 +68,13 @@ public class BasSupplierController extends JeecgController<BasSupplier, IBasSupp
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<BasSupplier> queryWrapper = QueryGenerator.initQueryWrapper(basSupplier, req.getParameterMap());
+		//QueryWrapper<BasSupplier> queryWrapper = QueryGenerator.initQueryWrapper(basSupplier, req.getParameterMap());
+		QueryWrapper<BasSupplier> queryWrapper = new QueryWrapper<>();
+		if (!ObjectUtils.isEmpty(basSupplier.getName())){
+			queryWrapper.and(i->i.like("name", basSupplier.getName()).or().like("corporate", basSupplier.getName()).or()
+					.like("address", basSupplier.getName()).or().like("remark", basSupplier.getName()));
+		}
+		queryWrapper.orderByDesc("create_time");
 		Page<BasSupplier> page = new Page<BasSupplier>(pageNo, pageSize);
 		IPage<BasSupplier> pageList = basSupplierService.page(page, queryWrapper);
 		return Result.ok(pageList);
