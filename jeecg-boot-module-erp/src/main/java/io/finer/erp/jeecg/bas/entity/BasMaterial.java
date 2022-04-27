@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -109,5 +111,9 @@ public class BasMaterial implements Serializable {
     private boolean leaf = true;
 
     private Integer level;
-    
+
+    @TableField(
+            exist = false
+    )
+    private List<BasMaterial> children;
 }

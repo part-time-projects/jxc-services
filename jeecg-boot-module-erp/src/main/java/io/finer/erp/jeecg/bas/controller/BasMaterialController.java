@@ -1,13 +1,16 @@
 package io.finer.erp.jeecg.bas.controller;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.finer.erp.jeecg.bas.entity.BasMaterial;
 import io.finer.erp.jeecg.bas.entity.TreeModel;
+import io.finer.erp.jeecg.bas.model.BasMaterialModel;
 import io.finer.erp.jeecg.bas.model.BasMaterialTree;
 import io.finer.erp.jeecg.bas.service.IBasMaterialService;
+import io.micrometer.core.instrument.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
- /**
+/**
  * @Description: 物料
  * @Author: jeecg-boot
  * @Date:   2020-05-29
@@ -39,7 +42,7 @@ import java.util.*;
 public class BasMaterialController extends JeecgController<BasMaterial, IBasMaterialService> {
 	@Autowired
 	private IBasMaterialService basMaterialService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -52,27 +55,45 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 	@AutoLog(value = "物料-分页列表查询")
 	@ApiOperation(value="物料-分页列表查询", notes="物料-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<?> queryPageList(BasMaterial basMaterial,
+	public Result<?> queryPageList(BasMaterialModel basMaterial,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 
-		QueryWrapper<BasMaterial> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
+		/*QueryWrapper<BasMaterialModel> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
 		queryWrapper.isNull("level");
 
 		Page<BasMaterial> page = new Page<BasMaterial>(pageNo, pageSize);
 		IPage pageList = basMaterialService.page(page, queryWrapper);
 
-		/**
-		* 列表展示修改为树型列表展示
+		*//**
+		 * 列表展示修改为树型列表展示
 		 * 2022.4.1
-		 */
-  		List<BasMaterialTree> treeData = new ArrayList<>();
+		 *//*
+		List<BasMaterialTree> treeData = new ArrayList<>();
 		getTreeList(treeData,pageList.getRecords());
+		pageList.setRecords(treeData);
+		return Result.ok(pageList);*/
+
+		LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper();
+		if (StringUtils.isNotBlank(basMaterial.getCode()))
+			query.like(BasMaterial::getCode, basMaterial.getCode());
+		if (StringUtils.isNotBlank(basMaterial.getName()))
+			query.like(BasMaterial::getName, basMaterial.getName());
+		if (StringUtils.isNotBlank(basMaterial.getCategoryId()))
+			query.eq(BasMaterial::getCategoryId, basMaterial.getCategoryId());
+
+		query.isNull(BasMaterial::getLevel);
+		query.isNull(true, BasMaterial::getLevel);
+		Page<BasMaterial> page = new Page(pageNo.intValue(), pageSize.intValue());
+		IPage pageList = this.basMaterialService.page((IPage)page, (Wrapper)query);
+
+		List<BasMaterial> treeData = new ArrayList<>();
+		getTreeList(treeData, pageList.getRecords(), 0);
 		pageList.setRecords(treeData);
 		return Result.ok(pageList);
 	}
-	
+
 	/**
 	 *   添加
 	 *
@@ -86,7 +107,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		basMaterialService.addBasMaterial(basMaterial);
 		return Result.ok("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -100,7 +121,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		basMaterialService.editBasMaterial(basMaterial);
 		return Result.ok("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
@@ -114,7 +135,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		basMaterialService.deleteBasMaterial(id);
 		return Result.ok("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
@@ -128,7 +149,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		this.basMaterialService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.ok("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *
@@ -146,99 +167,114 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		return Result.ok(basMaterial);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param basMaterial
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, BasMaterial basMaterial) {
-        return super.exportXls(request, basMaterial, BasMaterial.class, "物料");
-    }
+	/**
+	 * 导出excel
+	 *
+	 * @param request
+	 * @param basMaterial
+	 */
+	@RequestMapping(value = "/exportXls")
+	public ModelAndView exportXls(HttpServletRequest request, BasMaterial basMaterial) {
+		return super.exportXls(request, basMaterial, BasMaterial.class, "物料");
+	}
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, BasMaterial.class);
-    }
+	/**
+	 * 通过excel导入数据
+	 *
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+		return super.importExcel(request, response, BasMaterial.class);
+	}
 
-	 /**
-	  * 获取全部的权限树
-	  *
-	  * @return
-	  */
-	 @RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
-	 public Result<Map<String, Object>> queryTreeList() {
-		 Result<Map<String, Object>> result = new Result<>();
-		 List<String> ids = new ArrayList<>();
-		 try {
-			 LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper<BasMaterial>();
+	/**
+	 * 获取全部的权限树
+	 *
+	 * @return
+	 */
+	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
+	public Result<Map<String, Object>> queryTreeList() {
+		Result<Map<String, Object>> result = new Result<>();
+		List<String> ids = new ArrayList<>();
+		try {
+			LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper<BasMaterial>();
 //			 query.eq(BasMaterial::isEnabled, CommonConstant.STATUS_NORMAL);
 //			 query.orderByAsc(SysPermission::getSortNo);
-			 List<BasMaterial> list = basMaterialService.list(query);
-			 for (BasMaterial sysPer : list) {
-				 ids.add(sysPer.getId());
-			 }
-			 List<TreeModel> treeList = new ArrayList<>();
-			 getTreeModelList(treeList, list, null);
+			List<BasMaterial> list = basMaterialService.list(query);
+			for (BasMaterial sysPer : list) {
+				ids.add(sysPer.getId());
+			}
+			List<TreeModel> treeList = new ArrayList<>();
+			getTreeModelList(treeList, list, null);
 
-			 Map<String, Object> resMap = new HashMap<String, Object>();
-			 resMap.put("treeList", treeList); // 全部树节点数据
-			 resMap.put("ids", ids);// 全部树ids
-			 result.setResult(resMap);
-			 result.setSuccess(true);
-		 } catch (Exception e) {
-			 log.error(e.getMessage(), e);
-		 }
-		 return result;
-	 }
+			Map<String, Object> resMap = new HashMap<String, Object>();
+			resMap.put("treeList", treeList); // 全部树节点数据
+			resMap.put("ids", ids);// 全部树ids
+			result.setResult(resMap);
+			result.setSuccess(true);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return result;
+	}
 
-	 private void getTreeModelList(List<TreeModel> treeList, List<BasMaterial> metaList, TreeModel temp) {
-		 for (BasMaterial basMaterial : metaList) {
-			 String tempPid = basMaterial.getParentId();
-			 TreeModel tree = new TreeModel(basMaterial);
-			 if (temp == null && oConvertUtils.isEmpty(tempPid)) {
-				 treeList.add(tree);
-				 if (!tree.getIsLeaf()) {
-					 getTreeModelList(treeList, metaList, tree);
-				 }
-			 } else if (temp != null && tempPid != null && tempPid.equals(temp.getKey())) {
-				 temp.getChildren().add(tree);
-				 if (!tree.getIsLeaf()) {
-					 getTreeModelList(treeList, metaList, tree);
-				 }
-			 }
+	private void getTreeModelList(List<TreeModel> treeList, List<BasMaterial> metaList, TreeModel temp) {
+		for (BasMaterial basMaterial : metaList) {
+			String tempPid = basMaterial.getParentId();
+			TreeModel tree = new TreeModel(basMaterial);
+			if (temp == null && oConvertUtils.isEmpty(tempPid)) {
+				treeList.add(tree);
+				if (!tree.getIsLeaf()) {
+					getTreeModelList(treeList, metaList, tree);
+				}
+			} else if (temp != null && tempPid != null && tempPid.equals(temp.getKey())) {
+				temp.getChildren().add(tree);
+				if (!tree.getIsLeaf()) {
+					getTreeModelList(treeList, metaList, tree);
+				}
+			}
 
-		 }
-	 }
+		}
+	}
 
 
 
-	 private void getTreeList(List<BasMaterialTree> treeList, List<BasMaterial> metaList) {
+	private void getTreeList(List<BasMaterialTree> treeList, List<BasMaterial> metaList) {
 
-	 	 //TODO  递归数据库，生产环境禁止使用，待优化
-		 for (BasMaterial basMaterial : metaList) {
-			 String tempPid = basMaterial.getId();
-			 BasMaterialTree tree = new BasMaterialTree(basMaterial);
+		//TODO  递归数据库，生产环境禁止使用，待优化
+		for (BasMaterial basMaterial : metaList) {
+			String tempPid = basMaterial.getId();
+			BasMaterialTree tree = new BasMaterialTree(basMaterial);
 
-			 treeList.add(tree);
-			 if (!basMaterial.isLeaf()){
-				 LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper<BasMaterial>();
-				 query.eq(BasMaterial::getParentId, tempPid);
-				 List<BasMaterial> childs = basMaterialService.list(query);
-				 if(childs != null && childs.size() > 0){
-					 getTreeList(treeList,childs);
-				 }
+			treeList.add(tree);
+			if (!basMaterial.isLeaf()){
+				LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper<BasMaterial>();
+				query.eq(BasMaterial::getParentId, tempPid);
+				List<BasMaterial> childs = basMaterialService.list(query);
+				if(childs != null && childs.size() > 0){
+					getTreeList(treeList,childs);
+				}
 
-			 }
-		 }
-	 }
+			}
+		}
+	}
+	private void getTreeList(List<BasMaterial> treeList, List<BasMaterial> metaList, int flag) {
+		for (BasMaterial basMaterial : metaList) {
+			String tempPid = basMaterial.getId();
+			if (flag == 0)
+				treeList.add(basMaterial);
+			if (!basMaterial.isLeaf()) {
+				LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper();
+				query.eq(BasMaterial::getParentId, tempPid);
+				List<BasMaterial> childs = this.basMaterialService.list((Wrapper)query);
+				basMaterial.setChildren(childs);
+				if (childs != null && childs.size() > 0)
+					getTreeList(treeList, childs, 1);
+			}
+		}
+	}
 
- }
+}
