@@ -2,7 +2,6 @@ package io.finer.erp.jeecg.bas.controller;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.finer.erp.jeecg.bas.entity.BasMaterial;
@@ -10,16 +9,14 @@ import io.finer.erp.jeecg.bas.entity.TreeModel;
 import io.finer.erp.jeecg.bas.model.BasMaterialModel;
 import io.finer.erp.jeecg.bas.model.BasMaterialTree;
 import io.finer.erp.jeecg.bas.service.IBasMaterialService;
+import io.finer.erp.jeecg.bas.service.IMaterialSupplierPriceService;
 import io.micrometer.core.instrument.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.jdbc.Null;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.AutoLog;
-import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.base.controller.JeecgController;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +39,8 @@ import java.util.*;
 public class BasMaterialController extends JeecgController<BasMaterial, IBasMaterialService> {
 	@Autowired
 	private IBasMaterialService basMaterialService;
+	@Autowired
+	private IMaterialSupplierPriceService materialSupplierPriceService;
 
 	/**
 	 * 分页列表查询
@@ -58,6 +57,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 	public Result<?> queryPageList(BasMaterialModel basMaterial,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+								   @RequestParam(name="supplierId",defaultValue = "")String supplierId,
 								   HttpServletRequest req) {
 
 		/*QueryWrapper<BasMaterialModel> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
@@ -76,12 +76,19 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		return Result.ok(pageList);*/
 
 		LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper();
-		if (StringUtils.isNotBlank(basMaterial.getCode()))
+		if (StringUtils.isNotBlank(basMaterial.getCode())) {
 			query.like(BasMaterial::getCode, basMaterial.getCode());
-		if (StringUtils.isNotBlank(basMaterial.getName()))
+		}
+		if (StringUtils.isNotBlank(basMaterial.getName())) {
 			query.like(BasMaterial::getName, basMaterial.getName());
-		if (StringUtils.isNotBlank(basMaterial.getCategoryId()))
+		}
+		if (StringUtils.isNotBlank(basMaterial.getCategoryId())) {
 			query.eq(BasMaterial::getCategoryId, basMaterial.getCategoryId());
+		}
+		if (StringUtils.isNotBlank(supplierId)) {
+			List<String> materialIds = materialSupplierPriceService.getMaterialIdsBySupplierId(supplierId);
+			query.in(BasMaterial::getId, materialIds);
+		}
 
 		query.isNull(BasMaterial::getLevel);
 		query.isNull(true, BasMaterial::getLevel);
