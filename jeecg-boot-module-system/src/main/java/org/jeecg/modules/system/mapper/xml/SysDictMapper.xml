@@ -71,26 +71,31 @@
 	<!-- 根据表名、显示字段名、存储字段名、父ID查询树 -->
 	<select id="queryTreeList" parameterType="Object" resultType="org.jeecg.modules.system.model.TreeSelectModel">
 		select ${text} as "title",
-			   ${code} as "key",
+			   ${code} as "key"
 			   <if test="hasChildField != null and hasChildField != ''">
-			   (case when ${hasChildField} = '1' then 0 else 1 end) as isLeaf,
+				   ,(case when ${hasChildField} = '1' then 0 else 1 end) as isLeaf
 			   </if>
-			   ${pidField} as parentId
+			   <if test="pidField != null and pidField != ''">
+				   ,${pidField} as parentId
+			   </if>
 			   from ${table}
-			   where
-			   <choose>
-				   <when test="pid != null and pid != ''">
-					   ${pidField} = #{pid}
-				   </when>
-				   <otherwise>
-					   (${pidField} = '' OR ${pidField} IS NULL)
-				   </otherwise>
-			   </choose>
-			   <if test="query!= null">
-				   <foreach collection="query.entrySet()" item="value"  index="key" >
-				   	and ${key} = #{value}
-				   </foreach>
-			   </if>
+			   <where>
+			       <choose>
+					   <when test="pid != null and pid != ''">
+						   ${pidField} = #{pid}
+					   </when>
+					   <otherwise>
+						   <if test="pidField != null and pidField != ''">
+							   (${pidField} = '' OR ${pidField} IS NULL)
+						   </if>
+					   </otherwise>
+				   </choose>
+				   <if test="query!= null">
+					   <foreach collection="query.entrySet()" item="value"  index="key" >
+						   and ${key} = #{value}
+					   </foreach>
+				   </if>
+			   </where>
 	</select>
 
 
