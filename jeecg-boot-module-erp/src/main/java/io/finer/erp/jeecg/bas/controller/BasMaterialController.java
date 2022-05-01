@@ -19,6 +19,7 @@ import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -87,6 +88,9 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		}
 		if (StringUtils.isNotBlank(supplierId)) {
 			List<String> materialIds = materialSupplierPriceService.getMaterialIdsBySupplierId(supplierId);
+			if (ObjectUtils.isEmpty(materialIds)){
+				materialIds = Arrays.asList("");
+			}
 			query.in(BasMaterial::getId, materialIds);
 		}
 
