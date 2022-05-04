@@ -2,24 +2,22 @@ package io.finer.erp.jeecg.bas.controller;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.finer.erp.jeecg.bas.entity.BasMaterial;
 import io.finer.erp.jeecg.bas.entity.TreeModel;
-import io.finer.erp.jeecg.bas.model.BasMaterialModel;
 import io.finer.erp.jeecg.bas.model.BasMaterialTree;
 import io.finer.erp.jeecg.bas.service.IBasMaterialService;
-import io.finer.erp.jeecg.bas.service.IMaterialSupplierPriceService;
-import io.micrometer.core.instrument.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.base.controller.JeecgController;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -40,8 +38,6 @@ import java.util.*;
 public class BasMaterialController extends JeecgController<BasMaterial, IBasMaterialService> {
 	@Autowired
 	private IBasMaterialService basMaterialService;
-	@Autowired
-	private IMaterialSupplierPriceService materialSupplierPriceService;
 
 	/**
 	 * 分页列表查询
@@ -55,26 +51,37 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 	@AutoLog(value = "物料-分页列表查询")
 	@ApiOperation(value="物料-分页列表查询", notes="物料-分页列表查询")
 	@GetMapping(value = "/list")
+	public Result<?> queryPageList(BasMaterial basMaterial,
+								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+								   HttpServletRequest req) {
+		QueryWrapper<BasMaterial> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
+		Page<BasMaterial> page = new Page<BasMaterial>(pageNo, pageSize);
+		IPage<BasMaterial> pageList = basMaterialService.page(page, queryWrapper);
+		return Result.ok(pageList);
+	}
+	/*
+	2022-05-04 还原最初查询状态,不需要展示树菜单
 	public Result<?> queryPageList(BasMaterialModel basMaterial,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   @RequestParam(name="supplierId",defaultValue = "")String supplierId,
 								   HttpServletRequest req) {
 
-		/*QueryWrapper<BasMaterialModel> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
+		*//*QueryWrapper<BasMaterialModel> queryWrapper = QueryGenerator.initQueryWrapper(basMaterial, req.getParameterMap());
 		queryWrapper.isNull("level");
 
 		Page<BasMaterial> page = new Page<BasMaterial>(pageNo, pageSize);
 		IPage pageList = basMaterialService.page(page, queryWrapper);
 
-		*//**
+		*//**//**
 		 * 列表展示修改为树型列表展示
 		 * 2022.4.1
-		 *//*
+		 *//**//*
 		List<BasMaterialTree> treeData = new ArrayList<>();
 		getTreeList(treeData,pageList.getRecords());
 		pageList.setRecords(treeData);
-		return Result.ok(pageList);*/
+		return Result.ok(pageList);*//*
 
 		LambdaQueryWrapper<BasMaterial> query = new LambdaQueryWrapper();
 		if (StringUtils.isNotBlank(basMaterial.getCode())) {
@@ -103,7 +110,7 @@ public class BasMaterialController extends JeecgController<BasMaterial, IBasMate
 		getTreeList(treeData, pageList.getRecords(), 0);
 		pageList.setRecords(treeData);
 		return Result.ok(pageList);
-	}
+	}*/
 
 	/**
 	 *   添加
