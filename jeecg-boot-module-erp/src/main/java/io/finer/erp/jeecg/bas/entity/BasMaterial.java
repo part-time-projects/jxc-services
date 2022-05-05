@@ -116,4 +116,10 @@ public class BasMaterial implements Serializable {
             exist = false
     )
     private List<BasMaterial> children;
+
+    /**分类*/
+    @Excel(name = "供应商", width = 15, dictTable = "bas_material_category", dicText = "name", dicCode = "id")
+    @Dict(dictTable = "bas_supplier", dicText = "name", dicCode = "id")
+    @ApiModelProperty(value = "分类")
+    private java.lang.String supplierId;
 }
