@@ -211,7 +211,7 @@ cas:
   prefixUrl: http://cas.example.org:8443/cas
 logging:
   level:
-    org.jeecg.modules.system.mapper : debug
+    org.jeecg.modules.system.mapper : error
 #enable swagger
 swagger:
   enable: true
